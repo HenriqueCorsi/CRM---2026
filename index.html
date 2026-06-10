@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM FERCOI</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
+  --border: #2e3250; --border2: #404670;
+  --text: #e2e8f0; --muted: #8892b0; --muted2: #4a5580;
+  --accent: #4f6ef7; --danger: #ef4444;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
+}
+
+html[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #eef0f4;
+  --border: #e2e5ec; --border2: #ccd1dc;
+  --text: #1c1f29; --muted: #6b7280; --muted2: #9aa3b5;
+  --accent: #4f6ef7; --danger: #ef4444;
+  --shadow: 0 1px 3px rgba(20,20,40,.06);
+  --shadow-lg: 0 10px 40px rgba(20,20,40,.10), 0 4px 12px rgba(20,20,40,.06);
+}
+html, body { transition: background-color .15s ease, color .15s ease; }
+
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif; font-size:14px; line-height:1.5; }
+
+.header { position:sticky; top:0; z-index:50; background:var(--surface); border-bottom:1px solid var(--border); padding:0 28px; display:flex; align-items:center; justify-content:space-between; height:56px; gap:12px; }
+.logo { font-size:16px; font-weight:700; background:linear-gradient(135deg,var(--accent),#7c3aed); -webkit-background-clip:text; -webkit-text-fill-color:transparent; white-space:nowrap; }
+.tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+.tab { padding:6px 18px; font-size:13px; font-weight:500; color:var(--muted); background:var(--surface); border:none; cursor:pointer; transition:all .12s; border-right:1px solid var(--border); }
+.tab:last-child { border-right:none; }
+.tab.active { background:var(--accent); color:#fff; }
+.tab:hover:not(.active) { background:var(--surface2); color:var(--text); }
+
+.main { padding:28px; max-width:1440px; margin:0 auto; }
+
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; }
+.card-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:8px; }
+.card-value { font-size:36px; font-weight:700; letter-spacing:-1px; }
+.card-sub { font-size:12px; color:var(--muted); margin-top:4px; }
+
+.toolbar { display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+.search-wrap { position:relative; flex:1; min-width:200px; max-width:300px; }
+.search-wrap svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
+input[type="text"].search { width:100%; padding:8px 12px 8px 34px; border:1px solid var(--border); border-radius:6px; font-size:13px; color:var(--text); background:var(--surface); outline:none; }
+input[type="text"].search:focus { border-color:var(--accent); }
+input[type="text"].search::placeholder { color:var(--muted); }
+select.filter { padding:8px 30px 8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; color:var(--text); background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' viewBox='0 0 10 6'%3E%3Cpath stroke='%238892b0' stroke-width='1.5' d='M1 1l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 10px center; outline:none; cursor:pointer; -webkit-appearance:none; }
+select.filter:focus { border-color:var(--accent); }
+select.filter option { background:var(--surface2); }
+.count { font-size:12px; color:var(--muted); margin-left:auto; white-space:nowrap; }
+.btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .12s; white-space:nowrap; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:#3a5ce0; }
+.btn-sm { padding:5px 10px; font-size:12px; font-weight:500; border-radius:5px; }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
+.btn-ghost:hover { border-color:var(--border2); color:var(--text); background:var(--surface2); }
+.btn-danger { background:transparent; border:1px solid rgba(239,68,68,.3); color:var(--danger); }
+.btn-danger:hover { background:rgba(239,68,68,.1); border-color:rgba(239,68,68,.5); }
+
+.table-wrap { border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+table { width:100%; border-collapse:collapse; }
+thead th { background:var(--surface2); padding:10px 16px; text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); white-space:nowrap; cursor:pointer; user-select:none; border-bottom:1px solid var(--border); }
+thead th:hover { color:var(--text); }
+thead th.sorted { color:var(--text); }
+.sort-icon { margin-left:4px; font-size:10px; opacity:.4; }
+th.sorted .sort-icon { opacity:1; color:var(--accent); }
+tbody tr { border-top:1px solid var(--border); transition:background .08s; }
+tbody tr:hover { background:var(--surface2); }
+td { padding:11px 16px; vertical-align:middle; }
+.td-empresa { font-weight:600; font-size:13px; }
+.td-empresa small { display:block; font-weight:400; font-size:11px; color:var(--muted); margin-top:1px; }
+.td-muted { color:var(--muted); font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.actions { display:flex; gap:6px; opacity:0; transition:opacity .12s; }
+tr:hover .actions { opacity:1; }
+
+.badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+.badge-p { background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.35); }
+.badge-c { background:rgba(245,158,11,.15); color:#fbbf24; border:1px solid rgba(245,158,11,.35); }
+.badge-f { background:rgba(34,197,94,.15); color:#4ade80; border:1px solid rgba(34,197,94,.35); }
+.badge-seg { background:rgba(167,139,250,.1); color:#c4b5fd; border:1px solid rgba(167,139,250,.2); font-size:10px; }
+.dot { width:5px; height:5px; border-radius:50%; display:inline-block; margin-right:5px; }
+.dot-p { background:#f87171; } .dot-c { background:#fbbf24; } .dot-f { background:#4ade80; }
+
+.kanban-wrap { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.k-col { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.k-col-header { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.k-col-title { font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.k-count { background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:1px 9px; font-size:11px; color:var(--muted); }
+.k-cards { padding:12px; display:flex; flex-direction:column; gap:8px; max-height:620px; overflow-y:auto; }
+.k-card { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:12px 14px; cursor:pointer; transition:border-color .12s; }
+.k-card:hover { border-color:var(--accent); }
+.k-card-name { font-weight:600; font-size:13px; margin-bottom:6px; }
+.k-card-info { font-size:11px; color:var(--muted); display:flex; flex-direction:column; gap:3px; }
+
+.dash-charts { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.chart-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+.chart-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:20px; }
+.bar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.bar-label { font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0; }
+.bar-track { flex:1; background:var(--surface2); border-radius:2px; height:6px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:2px; background:var(--accent); transition:width .5s ease; }
+.bar-num { font-size:12px; color:var(--muted); text-align:right; flex-shrink:0; width:24px; }
+
+.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(3px); }
+.overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:12px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; box-shadow:var(--shadow-lg); }
+.modal-sm { max-width:400px; }
+.modal-head { padding:22px 24px 18px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; gap:12px; position:sticky; top:0; background:var(--surface); z-index:1; }
+.modal-title { font-size:17px; font-weight:700; letter-spacing:-.3px; line-height:1.3; }
+.modal-sub { font-size:12px; color:var(--muted); margin-top:4px; }
+.close-btn { width:30px; height:30px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.close-btn:hover { background:var(--surface2); color:var(--text); }
+.modal-body { padding:22px 24px; }
+.field-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.field { display:flex; flex-direction:column; gap:5px; }
+.field.full { grid-column:1/-1; }
+.field label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+.field input,.field select.form-sel { padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; color:var(--text); background:var(--surface2); outline:none; width:100%; font-family:inherit; }
+.field input:focus,.field select.form-sel:focus { border-color:var(--accent); }
+.field input::placeholder { color:var(--muted); }
+.field select.form-sel option { background:var(--surface2); }
+.field .val-text { font-size:13px; }
+.field .val-text.empty { color:var(--muted); font-style:italic; }
+.modal-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; position:sticky; bottom:0; background:var(--surface); }
+
+.confirm-body { padding:28px; text-align:center; }
+.confirm-icon { font-size:28px; margin-bottom:12px; }
+.confirm-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+.confirm-msg { font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.5; }
+.confirm-btns { display:flex; gap:10px; justify-content:center; }
+
+.toast { position:fixed; bottom:24px; right:24px; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:12px 20px; border-radius:8px; font-size:13px; font-weight:500; z-index:999; transform:translateY(20px); opacity:0; transition:all .2s; pointer-events:none; }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.err { border-color:rgba(239,68,68,.5); color:#f87171; }
+
+.empty { text-align:center; padding:60px; color:var(--muted); font-size:13px; }
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+@media(max-width:900px) {
+  .cards { grid-template-columns:repeat(2,1fr); }
+  .kanban-wrap { grid-template-columns:1fr; }
+  .dash-charts { grid-template-columns:1fr; }
+  .field-grid { grid-template-columns:1fr; }
+  .main { padding:16px; }
+  .header { padding:0 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">CRM FERCOI</div>
+  <div class="tabs">
+    <button class="tab active" onclick="setView('lista')">Lista</button>
+    <button class="tab" onclick="setView('kanban')">Kanban</button>
+    <button class="tab" onclick="setView('dashboard')">Dashboard</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+    <span id="sync-status" style="font-size:11px;color:var(--muted)"></span>
+    <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="theme-toggle" title="Alternar tema claro/escuro">🌙</button>
+    <button class="btn btn-ghost btn-sm" onclick="openSyncSettings()" title="Configurar sincronização">&#x2699; Sync</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- LISTA -->
+  <div id="view-lista">
+    <div class="cards" id="cards-top"></div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" class="search" id="search" placeholder="Buscar…" oninput="applyFilters()">
+      </div>
+      <select class="filter" id="f-seg" onchange="applyFilters()"><option value="">Todos segmentos</option></select>
+      <select class="filter" id="f-status" onchange="applyFilters()">
+        <option value="">Todos status</option>
+        <option>Prospecção</option><option>Cotação</option><option>Fechando</option>
+      </select>
+      <select class="filter" id="f-estado" onchange="applyFilters()"><option value="">Todos estados</option></select>
+      <span class="count" id="count-label"></span>
+      <button class="btn btn-primary" onclick="openForm(null)">+ Novo lead</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('empresa')">Empresa<span class="sort-icon" id="si-empresa">↕</span></th>
+          <th onclick="sortBy('segmento')">Segmento<span class="sort-icon" id="si-segmento">↕</span></th>
+          <th onclick="sortBy('status')">Status<span class="sort-icon" id="si-status">↕</span></th>
+          <th onclick="sortBy('nome_contato')">Contato<span class="sort-icon" id="si-nome_contato">↕</span></th>
+          <th>Email / WhatsApp / Telefone</th>
+          <th onclick="sortBy('estado')">Local<span class="sort-icon" id="si-estado">↕</span></th>
+          <th onclick="sortBy('ultimo_contato')">Últ. Contato<span class="sort-icon" id="si-ultimo_contato">↕</span></th>
+          <th style="width:90px"></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty-msg" style="display:none">Nenhum resultado encontrado.</div>
+    </div>
+  </div>
+
+  <!-- KANBAN -->
+  <div id="view-kanban" style="display:none">
+    <div class="toolbar" style="margin-bottom:16px">
+      <select class="filter" id="k-seg" onchange="renderKanban()"><option value="">Todos segmentos</option></select>
+      <button class="btn btn-primary" style="margin-left:auto" onclick="openForm(null)">+ Novo lead</button>
+    </div>
+    <div class="kanban-wrap">
+      <div class="k-col">
+        <div class="k-col-header"><span class="k-col-title"><span class="dot dot-p"></span>Prospecção</span><span class="k-count" id="kc-p">0</span></div>
+        <div class="k-cards" id="k-p"></div>
+      </div>
+      <div class="k-col">
+        <div class="k-col-header"><span class="k-col-title"><span class="dot dot-c"></span>Cotação</span><span class="k-count" id="kc-c">0</span></div>
+        <div class="k-cards" id="k-c"></div>
+      </div>
+      <div class="k-col">
+        <div class="k-col-header"><span class="k-col-title"><span class="dot dot-f"></span>Fechando</span><span class="k-count" id="kc-f">0</span></div>
+        <div class="k-cards" id="k-f"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" style="display:none">
+    <div class="cards" id="cards-dash" style="margin-bottom:24px"></div>
+    <div class="dash-charts">
+      <div class="chart-box"><div class="chart-title">Por Segmento</div><div id="ch-seg"></div></div>
+      <div class="chart-box"><div class="chart-title">Por Status</div><div id="ch-status"></div></div>
+      <div class="chart-box"><div class="chart-title">Por Estado</div><div id="ch-estado" style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px"></div></div>
+      <div class="chart-box"><div class="chart-title">Últimos Contatos</div><div id="ch-recent"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM MODAL -->
+<div class="overlay" id="form-overlay" onclick="overlayClose(event,'form-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div><div class="modal-title" id="form-title">Novo Lead</div><div class="modal-sub">Preencha os dados do contato</div></div>
+      <button class="close-btn" onclick="closeForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-grid">
+        <div class="field full"><label>Empresa *</label><input type="text" id="f-empresa" placeholder="Nome da empresa"></div>
+        <div class="field"><label>Segmento *</label><select class="form-sel" id="f-segmento"></select></div>
+        <div class="field"><label>Status</label>
+          <select class="form-sel" id="f-status-form">
+            <option>Prospecção</option><option>Cotação</option><option>Fechando</option>
+          </select>
+        </div>
+        <div class="field"><label>Código</label><input type="text" id="f-codigo" placeholder="Código do cliente"></div>
+        <div class="field"><label>Nome do Contato</label><input type="text" id="f-nome" placeholder="Nome"></div>
+        <div class="field full"><label>Email</label><input type="text" id="f-email" placeholder="email@empresa.com.br"></div>
+        <div class="field"><label>Telefone</label><input type="text" id="f-tel" placeholder="(11) 0000-0000"></div>
+        <div class="field"><label>WhatsApp</label><input type="text" id="f-wa" placeholder="(11) 9 0000-0000"></div>
+        <div class="field"><label>Estado</label>
+          <select class="form-sel" id="f-uf">
+            <option value="">—</option>
+            <option>AC</option><option>AL</option><option>AM</option><option>AP</option><option>BA</option>
+            <option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option>
+            <option>MG</option><option>MS</option><option>MT</option><option>PA</option><option>PB</option>
+            <option>PE</option><option>PI</option><option>PR</option><option>RJ</option><option>RN</option>
+            <option>RO</option><option>RR</option><option>RS</option><option>SC</option><option>SE</option>
+            <option>SP</option><option>TO</option>
+          </select>
+        </div>
+        <div class="field"><label>Município</label><input type="text" id="f-municipio" placeholder="Cidade"></div>
+        <div class="field"><label>Último Contato</label><input type="text" id="f-contato" placeholder="dd/mm/aaaa"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeForm()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveForm()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-overlay" onclick="overlayClose(event,'detail-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div><div style="margin-bottom:8px" id="d-badges"></div><div class="modal-title" id="d-empresa"></div><div class="modal-sub" id="d-sub"></div></div>
+      <button class="close-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="modal-body" id="d-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="d-del-btn">Excluir</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost btn-sm" onclick="closeDetail()">Fechar</button>
+      <button class="btn btn-primary btn-sm" id="d-edit-btn">Editar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="overlay" id="confirm-overlay">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="confirm-body">
+      <div class="confirm-icon">⚠</div>
+      <div class="confirm-title">Excluir registro?</div>
+      <div class="confirm-msg" id="confirm-msg"></div>
+      <div class="confirm-btns">
+        <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+        <button class="btn btn-danger" id="confirm-ok">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SYNC SETTINGS MODAL -->
+<div class="overlay" id="sync-overlay" onclick="if(event.target===this)closeSyncSettings()">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div><div class="modal-title">Sincroniza&#231;&#227;o na Nuvem</div><div class="modal-sub">Salve seus dados via GitHub Gist (gratuito)</div></div>
+      <button class="close-btn" onclick="closeSyncSettings()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7;background:var(--surface2);padding:12px;border-radius:6px;border:1px solid var(--border)">
+        <b style="color:var(--text)">Como configurar:</b><br>
+        1. Acesse <a href="https://github.com/settings/tokens/new?scopes=gist" target="_blank" style="color:var(--accent)">github.com/settings/tokens</a><br>
+        2. Crie um token com escopo <code style="color:#fbbf24">gist</code><br>
+        3. Cole o token abaixo e clique em Salvar<br>
+        4. Um Gist privado ser&#225; criado automaticamente<br>
+        5. Repita esses passos (mesmo token e mesmo ID do Gist) em cada perfil/computador. Os dados sincronizam automaticamente a cada ~20 segundos.
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>Token GitHub (Personal Access Token)</label>
+        <input type="password" id="sync-token" placeholder="ghp_xxxxxxxxxxxx" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);background:var(--surface2);outline:none;width:100%;font-family:monospace">
+      </div>
+      <div class="field">
+        <label>ID do Gist (deixe vazio para criar automaticamente)</label>
+        <input type="text" id="sync-gist-id" placeholder="ex: a1b2c3d4e5f6..." style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);background:var(--surface2);outline:none;width:100%;font-family:monospace">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="setSyncCfg({});if(pollTimer)clearInterval(pollTimer);closeSyncSettings();showToast('Sync desativado')">Desativar</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost btn-sm" onclick="closeSyncSettings()">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="sync-save-btn" onclick="saveSyncSettings()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SEED = [{"_id": 1, "empresa": "Aethra Sistemas Automotivos", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "MG", "municipio": "São Bernado do Campo", "segmento": "Automotivo"}, {"_id": 2, "empresa": "Budai Indústria Metalúrgica Ltda", "codigo": "", "ultimo_contato": "07/04/2026", "email": "jailson.guimares@budai.ind.br / thiago.fernandes@budai.ind.br", "telefone": "4144-9872 / 4144-9873", "whatsapp": "", "nome_contato": "Thiago", "status": "Prospecção", "estado": "SP", "municipio": "Itapevi", "segmento": "Automotivo"}, {"_id": 3, "empresa": "Granei Metalurgica de Auto Peças", "codigo": "55035", "ultimo_contato": "30/03/2026", "email": "renato@granei.com.br", "telefone": "(11)3787-0200", "whatsapp": "", "nome_contato": "Renato", "status": "Prospecção", "estado": "SP", "municipio": "Guarulhos", "segmento": "Automotivo"}, {"_id": 4, "empresa": "Itasbra Industria Mêcanica", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Diadema", "segmento": "Automotivo"}, {"_id": 5, "empresa": "Unifap Caldeiraria", "codigo": "66148", "ultimo_contato": "", "email": "compras@unifap.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SC", "municipio": "Gaspar", "segmento": "Automotivo"}, {"_id": 6, "empresa": "Aukzzo Industria e Comercio de peças", "codigo": "66582", "ultimo_contato": "", "email": "antonio.vlademir@aukzzo.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Antonio", "status": "Fechando", "estado": "SP", "municipio": "Itaquaquecetuba", "segmento": "Automotivo"}, {"_id": 7, "empresa": "ZZK Industria e comercio de peças", "codigo": "50755", "ultimo_contato": "", "email": "antonio.vlademir@zzk.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Antonio", "status": "Fechando", "estado": "SP", "municipio": "Itaquaquecetuba", "segmento": "Automotivo"}, {"_id": 8, "empresa": "Metalsa Brasil Industria e Comercio de AutoPeças", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "3604-4442 / 3604-4391", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Osasco /", "segmento": "Automotivo"}, {"_id": 9, "empresa": "Gestamp Brasil Industria de Autopecas S/A", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Sorocaba", "segmento": "Automotivo"}, {"_id": 10, "empresa": "Extech-Link Indústria Mecânica", "codigo": "", "ultimo_contato": "30/03/2026", "email": "compras@etl.ind.br", "telefone": "", "whatsapp": "14 99883-3865", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Ourinhos", "segmento": "Caldeiraria"}, {"_id": 11, "empresa": "HRC Metalização", "codigo": "62579", "ultimo_contato": "", "email": "Adriele.Menegali@hrcmetalizacao.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Cotação", "estado": "SP", "municipio": "Piracicaba", "segmento": "Caldeiraria"}, {"_id": 12, "empresa": "Nacional Industria Mecanica", "codigo": "6344", "ultimo_contato": "30/03/2026", "email": "compras@nacionalindustria.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Pindamonhangaba", "segmento": "Caldeiraria"}, {"_id": 13, "empresa": "RV Soluções Industriais", "codigo": "", "ultimo_contato": "07/04/2026", "email": "vinicius@rvsolucoes.ind.br", "telefone": "", "whatsapp": "", "nome_contato": "Vinicius", "status": "Prospecção", "estado": "SP", "municipio": "Sorocaba", "segmento": "Caldeiraria"}, {"_id": 14, "empresa": "HCI Hidraulica Conexoes Industriais", "codigo": "64733", "ultimo_contato": "", "email": "alexia.costa@hci.ind.br / david.silva@hci.ind.br", "telefone": "", "whatsapp": "", "nome_contato": "Alexia / David", "status": "Fechando", "estado": "SP", "municipio": "Guarulhos", "segmento": "Caldeiraria"}, {"_id": 15, "empresa": "Costafer Caldeiraria e Manutenção", "codigo": "68395", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "94747-9148", "nome_contato": "Abel", "status": "Fechando", "estado": "SP", "municipio": "Poá", "segmento": "Caldeiraria"}, {"_id": 16, "empresa": "HCI Industrial", "codigo": "64733", "ultimo_contato": "", "email": "ivani.silva@hci.ind.br", "telefone": "2432-8002", "whatsapp": "11 94541-4177", "nome_contato": "Ivani", "status": "Fechando", "estado": "SP", "municipio": "Guarulhos", "segmento": "Caldeiraria"}, {"_id": 17, "empresa": "Recald Caldeiraria Industrial", "codigo": "49319", "ultimo_contato": "", "email": "administrativo@caldeirariarecald.com.br", "telefone": "11-4823-9447", "whatsapp": "", "nome_contato": "Juliana", "status": "Cotação", "estado": "SP", "municipio": "Ribeirão Pires", "segmento": "Caldeiraria"}, {"_id": 18, "empresa": "Nardini Agroindustrial Ltda", "codigo": "58321", "ultimo_contato": "30/03/2026", "email": "allan.roger@nardini.ind.br", "telefone": "", "whatsapp": "", "nome_contato": "Allan", "status": "Cotação", "estado": "SP", "municipio": "Vista Alegre do Alto", "segmento": "Bioenergéticas  Usina de Açucar"}, {"_id": 19, "empresa": "CRV Industria LTDA", "codigo": "62489", "ultimo_contato": "", "email": "jose.sousa@crvindustrial.com.br", "telefone": "", "whatsapp": "62 9929-1742", "nome_contato": "Jose", "status": "Fechando", "estado": "MG", "municipio": "Capinopolis", "segmento": "Bioenergéticas  Usina de Açucar"}, {"_id": 20, "empresa": "CRV Industria LTDA", "codigo": "43568", "ultimo_contato": "", "email": "luciano@cooper-rubi.com.br", "telefone": "", "whatsapp": "62 9999-5101", "nome_contato": "Luciano", "status": "Fechando", "estado": "GO", "municipio": "Carmo do Rio Verde", "segmento": "Bioenergéticas  Usina de Açucar"}, {"_id": 21, "empresa": "Agro Serra Industrial", "codigo": "56302", "ultimo_contato": "", "email": "compras3@agroserra.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Rivaldo", "status": "Fechando", "estado": "MA", "municipio": "São Raimundo", "segmento": "Bioenergéticas  Usina de Açucar"}, {"_id": 22, "empresa": "Aterpa", "codigo": "56930", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "MG", "municipio": "Belo Horizonte", "segmento": "Construtura"}, {"_id": 23, "empresa": "Brasil Pontes", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "ES", "municipio": "Monte Claros", "segmento": "Construtura"}, {"_id": 24, "empresa": "Carioca Christiani Nielsen Engenharia S A", "codigo": "66644", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "RJ", "municipio": "Rio de Janeiro", "segmento": "Construtura"}, {"_id": 25, "empresa": "Cesbe Engenharia SA", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "PR", "municipio": "Curitiba", "segmento": "Construtura"}, {"_id": 26, "empresa": "CIMCOP Engenharia", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "MG", "municipio": "Belo Horizonte", "segmento": "Construtura"}, {"_id": 27, "empresa": "Construtora Barbosa de Mello", "codigo": "51192", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "MG", "municipio": "Belo Horizonte", "segmento": "Construtura"}, {"_id": 28, "empresa": "Convaço", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "MG", "municipio": "Ipatinga", "segmento": "Construtura"}, {"_id": 29, "empresa": "CSA Construtora Souza Araujo", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "PR", "municipio": "Belo Horizonte", "segmento": "Construtura"}, {"_id": 30, "empresa": "Fortes Engenharia LTDA", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "ES", "municipio": "Vitória", "segmento": "Construtura"}, {"_id": 31, "empresa": "Milplan Engenharia S.a", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "MG", "municipio": "Belo Horizonte", "segmento": "Construtura"}, {"_id": 32, "empresa": "Mip Engenaria", "codigo": "62035", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "MG", "municipio": "Belo Horizonte", "segmento": "Construtura"}, {"_id": 33, "empresa": "Niplan Engenharia", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "São Paulo", "segmento": "Construtura"}, {"_id": 34, "empresa": "Pelicano Construções S/A", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "ES", "municipio": "Serra", "segmento": "Construtura"}, {"_id": 35, "empresa": "Plamont Engenharia", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "ES", "municipio": "Serra", "segmento": "Construtura"}, {"_id": 36, "empresa": "Tabocas", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "MG", "municipio": "Belo Horizonte", "segmento": "Construtura"}, {"_id": 37, "empresa": "Habitechne Engenharia e Construção", "codigo": "65860", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "15 98828-4437", "nome_contato": "Lucas", "status": "Cotação", "estado": "SP", "municipio": "Sorocaba", "segmento": "Construtura"}, {"_id": 38, "empresa": "Pipeline Engenharia", "codigo": "65939", "ultimo_contato": "", "email": "wagnher@pipeline.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Wagner", "status": "Fechando", "estado": "BA", "municipio": "Lauro de Freitas", "segmento": "Construtura"}, {"_id": 39, "empresa": "Trail Engenahria Ltda", "codigo": "58544", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "São Paulo", "segmento": "Construtura"}, {"_id": 40, "empresa": "Construfenix Comercio e Construtora", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Caieiras", "segmento": "Construtura"}, {"_id": 41, "empresa": "FAM Construção Metalica Pesada", "codigo": "", "ultimo_contato": "07/04/2026", "email": "gian@famsteel.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Gian", "status": "Prospecção", "estado": "SP", "municipio": "Jarinu", "segmento": "Construção Metalica"}, {"_id": 42, "empresa": "Forte Metal Estrutura Metálica", "codigo": "", "ultimo_contato": "", "email": "compras@fortemetal.ind.br", "telefone": "3238-1500", "whatsapp": "", "nome_contato": "Diego", "status": "Prospecção", "estado": "SP", "municipio": "Sorocaba", "segmento": "Construção Metalica"}, {"_id": 43, "empresa": "Mecontel Estruturas Metálicas", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Santana de Parnaíba", "segmento": "Construção Metalica"}, {"_id": 44, "empresa": "Montaza", "codigo": "", "ultimo_contato": "07/04/2026", "email": "andre@montaza.ind.br", "telefone": "", "whatsapp": "9 9732-0056", "nome_contato": "Andre", "status": "Prospecção", "estado": "SP", "municipio": "Campo Largo", "segmento": "Construção Metalica"}, {"_id": 45, "empresa": "PlanMetal", "codigo": "50756", "ultimo_contato": "07/04/2026", "email": "suprimentos@planmetal.com.br", "telefone": "11 4038-1833", "whatsapp": "", "nome_contato": "Henrique", "status": "Prospecção", "estado": "SP", "municipio": "Campo Limpo Paulista", "segmento": "Construção Metalica"}, {"_id": 46, "empresa": "Regional Telhas", "codigo": "", "ultimo_contato": "", "email": "compras@regionaltelhas.com.br", "telefone": "", "whatsapp": "18 99176-4361", "nome_contato": "Andrea", "status": "Prospecção", "estado": "", "municipio": "", "segmento": "Construção Metalica"}, {"_id": 47, "empresa": "Sidertec Estruturas Metalicas", "codigo": "55698", "ultimo_contato": "30/03/2026", "email": "fernanda.ribeiro@sidertec.com.br", "telefone": "15 3353-8400 (8424)", "whatsapp": "", "nome_contato": "Fernanda", "status": "Cotação", "estado": "SP", "municipio": "Ibaté", "segmento": "Construção Metalica"}, {"_id": 48, "empresa": "Stratus Compostos Estruturais", "codigo": "64814", "ultimo_contato": "07/04/2026", "email": "william.ramos@stratusfrp.com", "telefone": "", "whatsapp": "", "nome_contato": "William", "status": "Prospecção", "estado": "SP", "municipio": "São José dos Campos", "segmento": "Construção Metalica"}, {"_id": 49, "empresa": "Systemac Estruturas Metalicas", "codigo": "55154", "ultimo_contato": "28/01/2026", "email": "compras@systemac.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Araçariguama", "segmento": "Construção Metalica"}, {"_id": 50, "empresa": "VitroMorth", "codigo": "", "ultimo_contato": "28/01/2026", "email": "lucas@vitromorth.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Lucas", "status": "Prospecção", "estado": "SP", "municipio": "Taubaté", "segmento": "Construção Metalica"}, {"_id": 51, "empresa": "DM2 Metalurgica", "codigo": "", "ultimo_contato": "30/03/2026", "email": "daniel@dm2.com.br / producao@dm2.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "São Paulo", "segmento": "Metalurgica"}, {"_id": 52, "empresa": "Estampex", "codigo": "", "ultimo_contato": "30/03/2026", "email": "compras@estampex.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Isaias", "status": "Prospecção", "estado": "SP", "municipio": "São Paulo", "segmento": "Metalurgica"}, {"_id": 53, "empresa": "Grampel", "codigo": "58020", "ultimo_contato": "", "email": "rafael.rosa@grampel.ind.br", "telefone": "", "whatsapp": "9974-2497", "nome_contato": "", "status": "Prospecção", "estado": "SC", "municipio": "Joinville", "segmento": "Metalurgica"}, {"_id": 54, "empresa": "HeatMec Industria Metalurgica", "codigo": "36860", "ultimo_contato": "28/01/2026", "email": "compras@heatmec.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Arlei", "status": "Cotação", "estado": "SP", "municipio": "Ribeirão Pires", "segmento": "Metalurgica"}, {"_id": 55, "empresa": "HRC Metalização", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Cotação", "estado": "SP", "municipio": "Piracicaba", "segmento": "Metalurgica"}, {"_id": 56, "empresa": "JEA Industria Metalúrgica", "codigo": "53395", "ultimo_contato": "30/03/2026", "email": "driele.marim@jea.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Mauá", "segmento": "Metalurgica"}, {"_id": 57, "empresa": "Kriger Metalurgica", "codigo": "48874", "ultimo_contato": "", "email": "gilberto.krieger@krieger.com.br", "telefone": "47 3231-1336 (46)", "whatsapp": "", "nome_contato": "Gilberto", "status": "Cotação", "estado": "SC", "municipio": "Blumenau", "segmento": "Metalurgica"}, {"_id": 58, "empresa": "Metalúrgica Bertizola Ltda", "codigo": "", "ultimo_contato": "30/03/2026", "email": "compras@metalurgicabertizola.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Igor", "status": "Prospecção", "estado": "SP", "municipio": "Santa Barbara D' Oeste", "segmento": "Metalurgica"}, {"_id": 59, "empresa": "Metalúrgica Cardoso", "codigo": "", "ultimo_contato": "", "email": "compras@metalurgicacardoso.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SC", "municipio": "São Carlos", "segmento": "Metalurgica"}, {"_id": 60, "empresa": "Metalúrgica Cofelma", "codigo": "", "ultimo_contato": "", "email": "suprimentos1@cofelma.com.br", "telefone": "55 3222-1714", "whatsapp": "55 9 9126-0313", "nome_contato": "Henrique", "status": "Prospecção", "estado": "SC", "municipio": "Santa Maria", "segmento": "Metalurgica"}, {"_id": 61, "empresa": "Metalúrgica FIMAC", "codigo": "", "ultimo_contato": "", "email": "compras@fimac.ind.br", "telefone": "", "whatsapp": "", "nome_contato": "Marco", "status": "Prospecção", "estado": "SC", "municipio": "Gravataí", "segmento": "Metalurgica"}, {"_id": 62, "empresa": "Metalúrgica Fujii", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Indaiatuba", "segmento": "Metalurgica"}, {"_id": 63, "empresa": "Metalúrgica Fundimetal Ltda", "codigo": "", "ultimo_contato": "30/03/2026", "email": "compras@fundimetal.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Cristina", "status": "Prospecção", "estado": "SP", "municipio": "Guarulhos", "segmento": "Metalurgica"}, {"_id": 64, "empresa": "Metalúrgica Pschoal Ltda", "codigo": "65267", "ultimo_contato": "30/03/2026", "email": "juliana.santos@paschoal.com.br / meri.oliveira@paschoal.com.br", "telefone": "9 7142-7308 / 9 7306-7013", "whatsapp": "", "nome_contato": "Juliana / Meri", "status": "Prospecção", "estado": "SP", "municipio": "Itaquaquecetuba", "segmento": "Metalurgica"}, {"_id": 65, "empresa": "Metalúrgica Rio Grande", "codigo": "44750", "ultimo_contato": "30/03/2026", "email": "fernanda.soares@mrgnet.ind.br", "telefone": "", "whatsapp": "", "nome_contato": "Fernanda", "status": "Prospecção", "estado": "SP", "municipio": "Iagarapava", "segmento": "Metalurgica"}, {"_id": 66, "empresa": "Metalúrgica Rivertec", "codigo": "", "ultimo_contato": "30/03/2026", "email": "compras@rivertec.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Sabrina", "status": "Prospecção", "estado": "SP", "municipio": "Jaú", "segmento": "Metalurgica"}, {"_id": 67, "empresa": "Metalúrgica São Raphael", "codigo": "", "ultimo_contato": "", "email": "vanusa@saoraphael.com", "telefone": "11 4789-8400", "whatsapp": "11 99127-178", "nome_contato": "Vanusa / Samuel", "status": "Cotação", "estado": "SP", "municipio": "", "segmento": "Metalurgica"}, {"_id": 68, "empresa": "Niken Industria Metalurgica e Comercio", "codigo": "25550", "ultimo_contato": "28/01/2026", "email": "rose.evangelista@niken.com.br / suprimentos1@grupociclope.com.br", "telefone": "35 99757-5199 / 35 999391035", "whatsapp": "", "nome_contato": "Rose", "status": "Prospecção", "estado": "MG", "municipio": "", "segmento": "Metalurgica"}, {"_id": 69, "empresa": "Pava Zanetti Metalúrgica", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Americana", "segmento": "Metalurgica"}, {"_id": 70, "empresa": "SLT Metalúrgica", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Jaú", "segmento": "Metalurgica"}, {"_id": 71, "empresa": "WG Metalurgica", "codigo": "", "ultimo_contato": "", "email": "compras@wgmetalurgica.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "RS", "municipio": "Farroupilha", "segmento": "Metalurgica"}, {"_id": 72, "empresa": "MetalWay Industria", "codigo": "", "ultimo_contato": "12/01/2026", "email": "aline@metalway.com.br", "telefone": "11 2423-4458", "whatsapp": "", "nome_contato": "", "status": "Cotação", "estado": "SP", "municipio": "Guarulhos", "segmento": "Metalurgica"}, {"_id": 73, "empresa": "Grampel", "codigo": "58828", "ultimo_contato": "", "email": "rafael.rosa@grampel.ind.br", "telefone": "", "whatsapp": "9974-2497", "nome_contato": "Rafael", "status": "Prospecção", "estado": "SC", "municipio": "Joinville", "segmento": "Metalurgica"}, {"_id": 74, "empresa": "Kriger Metalurgica", "codigo": "48874", "ultimo_contato": "", "email": "gilberto.krieger@krieger.com.br", "telefone": "47 3231-1336 (46)", "whatsapp": "", "nome_contato": "Gilberto", "status": "Prospecção", "estado": "SC", "municipio": "Blumenau", "segmento": "Metalurgica"}, {"_id": 75, "empresa": "Metalurgica Repuchotec", "codigo": "56458", "ultimo_contato": "", "email": "repuchotec@terra.com.br", "telefone": "", "whatsapp": "11 97258-4005", "nome_contato": "", "status": "Fechando", "estado": "SP", "municipio": "São Paulo", "segmento": "Metalurgica"}, {"_id": 76, "empresa": "Metalurgica Ciemi", "codigo": "66273", "ultimo_contato": "", "email": "fernanda@metalurgicaciemi.com.br", "telefone": "", "whatsapp": "19 99826-8095", "nome_contato": "", "status": "Cotação", "estado": "", "municipio": "Capivari", "segmento": "Metalurgica"}, {"_id": 77, "empresa": "Ethic Metalurgica Ltda", "codigo": "67014", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "11 93204-0629", "nome_contato": "Marcelo", "status": "Fechando", "estado": "SP", "municipio": "", "segmento": "Metalurgica"}, {"_id": 78, "empresa": "Fledlaz Industria Metalurgica LTDA", "codigo": "62222", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Ribeirão Pires", "segmento": "Metalurgica"}, {"_id": 79, "empresa": "ALBRAS - Alumínio Brasileiro S.A.", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Embu das Artes", "segmento": "Metalurgica"}, {"_id": 80, "empresa": "Calfen Metalurgica", "codigo": "50741", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Itupeva", "segmento": "Metalurgica"}, {"_id": 81, "empresa": "Agro Methal", "codigo": "", "ultimo_contato": "30/03/2026", "email": "martinez.patricia@agromethal.ind.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Itú", "segmento": "Máquinas Agricolas"}, {"_id": 82, "empresa": "Baldan Implementos Agricolas", "codigo": "55418", "ultimo_contato": "30/03/2026", "email": "compras@baldan.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Matão", "segmento": "Máquinas Agricolas"}, {"_id": 83, "empresa": "DMB Maquinas e Implementos", "codigo": "", "ultimo_contato": "30/03/2026", "email": "compras@dmb.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Sertãozinho", "segmento": "Máquinas Agricolas"}, {"_id": 84, "empresa": "GTS do Brasil", "codigo": "", "ultimo_contato": "30/03/2026", "email": "douglas.antunes@gtsdobrasil.com.br", "telefone": "", "whatsapp": "49 3251-7177", "nome_contato": "", "status": "Prospecção", "estado": "SC", "municipio": "Lages", "segmento": "Máquinas Agricolas"}, {"_id": 85, "empresa": "Inroda Industria", "codigo": "54586", "ultimo_contato": "30/03/2026", "email": "stela.lajarin@inroda.com.br", "telefone": "", "whatsapp": "14 99825-5311", "nome_contato": "Stlea", "status": "Prospecção", "estado": "SP", "municipio": "Avaré", "segmento": "Máquinas Agricolas"}, {"_id": 86, "empresa": "Marchesan", "codigo": "17730", "ultimo_contato": "30/03/2026", "email": "paulo@marchesan.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Paulo", "status": "Prospecção", "estado": "SP", "municipio": "Matão", "segmento": "Máquinas Agricolas"}, {"_id": 87, "empresa": "TMA Máquinas Agrícolas", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Ribeirão Preto", "segmento": "Máquinas Agricolas"}, {"_id": 88, "empresa": "Triton Máquinas Agrícolas", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "PR", "municipio": "Campo Mourão", "segmento": "Máquinas Agricolas"}, {"_id": 89, "empresa": "Luma Implementos Agricolas", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Itapira", "segmento": "Máquinas Agricolas"}, {"_id": 90, "empresa": "Implementos Agricolas Marispan", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "16 99182-0181", "nome_contato": "Thamiel", "status": "Cotação", "estado": "SP", "municipio": "Batatais", "segmento": "Máquinas Agricolas"}, {"_id": 91, "empresa": "Kamaq Maquinas e Implementos Agricolas", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Araras", "segmento": "Máquinas Agricolas"}, {"_id": 92, "empresa": "Inmacis Equipamentos Agricolas", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Holambra", "segmento": "Máquinas Agricolas"}, {"_id": 93, "empresa": "Santa Felicidade Mineração", "codigo": "66293", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "65 9992-7371", "nome_contato": "Jailton", "status": "Fechando", "estado": "MT", "municipio": "Mato Grosso", "segmento": "Mineradora"}, {"_id": 94, "empresa": "Pedreira DoValle", "codigo": "66017", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "11 96120-2582", "nome_contato": "Dorgeval", "status": "Fechando", "estado": "SP", "municipio": "Santa Isabel", "segmento": "Mineradora"}, {"_id": 95, "empresa": "Aeroduto Equipamentos Industriais", "codigo": "13260", "ultimo_contato": "", "email": "marcelo.tavares@aeroduto.com.br", "telefone": "", "whatsapp": "11 98850-8297", "nome_contato": "Marcelo", "status": "Cotação", "estado": "SP", "municipio": "Diadema", "segmento": "Equipamentos Industriais"}, {"_id": 96, "empresa": "Alphatec Comercios e Serviços", "codigo": "56671", "ultimo_contato": "", "email": "daniela@alphateccranes.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Fechando", "estado": "SP", "municipio": "Cotia", "segmento": "Equipamentos Industriais"}, {"_id": 97, "empresa": "Astek Engenharia", "codigo": "", "ultimo_contato": "30/03/2026", "email": "daniel@astek.eng.br", "telefone": "", "whatsapp": "", "nome_contato": "Daniel", "status": "Prospecção", "estado": "SP", "municipio": "Diadema", "segmento": "Equipamentos Industriais"}, {"_id": 98, "empresa": "Asvotec Termoindustrial", "codigo": "", "ultimo_contato": "30/03/2026", "email": "suprimentos@asvotec.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Mont Mor", "segmento": "Equipamentos Industriais"}, {"_id": 99, "empresa": "Dupps do Brasil Indústria e Comércio", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Mauá", "segmento": "Equipamentos Industriais"}, {"_id": 100, "empresa": "FW Soluções Industriais", "codigo": "56191", "ultimo_contato": "30/03/2026", "email": "giovanni@fw.ind.br", "telefone": "", "whatsapp": "", "nome_contato": "Giovanni", "status": "Prospecção", "estado": "SP", "municipio": "Sertãozinho", "segmento": "Equipamentos Industriais"}, {"_id": 101, "empresa": "GH do Brasil Industria", "codigo": "51528", "ultimo_contato": "", "email": "k.nascimento@ghcranes.com.br", "telefone": "", "whatsapp": "11 97446-8700", "nome_contato": "Kathleen", "status": "Fechando", "estado": "SP", "municipio": "Cabreúva", "segmento": "Equipamentos Industriais"}, {"_id": 102, "empresa": "Grupo Refratech", "codigo": "65429", "ultimo_contato": "", "email": "michele.silva@refratech.com.br / jucineide.silva@refratech", "telefone": "", "whatsapp": "", "nome_contato": "Michele / Jucineide", "status": "Cotação", "estado": "SP", "municipio": "Santos", "segmento": "Equipamentos Industriais"}, {"_id": 103, "empresa": "Isma Industria Silveira", "codigo": "58298", "ultimo_contato": "", "email": "compras4@isma.com.br / compras3@isma.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Daniela / Jonatas", "status": "Cotação", "estado": "SP", "municipio": "Mogi Mirim", "segmento": "Equipamentos Industriais"}, {"_id": 104, "empresa": "Jeltec Engenharia Industrial", "codigo": "", "ultimo_contato": "30/03/2026", "email": "joao.morais@jeltec.ind.br", "telefone": "", "whatsapp": "", "nome_contato": "João", "status": "Prospecção", "estado": "SP", "municipio": "Pindamonhangaba", "segmento": "Equipamentos Industriais"}, {"_id": 105, "empresa": "KIE Maquinas e Plásticos", "codigo": "53178", "ultimo_contato": "30/03/2026", "email": "compras@kie.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Louveira", "segmento": "Equipamentos Industriais"}, {"_id": 106, "empresa": "Krones do Brasil", "codigo": "", "ultimo_contato": "30/03/2026", "email": "felipe.santos@krones.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Felipe", "status": "Prospecção", "estado": "SP", "municipio": "Diadema", "segmento": "Equipamentos Industriais"}, {"_id": 107, "empresa": "Mausa S/A Equipamentos", "codigo": "", "ultimo_contato": "30/03/2026", "email": "luciano@mausa.com.br", "telefone": "(19) 3124-3026", "whatsapp": "", "nome_contato": "Thaís", "status": "Prospecção", "estado": "SP", "municipio": "Piracicaba", "segmento": "Equipamentos Industriais"}, {"_id": 108, "empresa": "Metaltec do Brasil Equipamentos", "codigo": "", "ultimo_contato": "30/03/2026", "email": "cleber@metaltecdobrasil.com.br", "telefone": "", "whatsapp": "17 997718990", "nome_contato": "Cleber", "status": "Prospecção", "estado": "SP", "municipio": "São José do Rio Preto", "segmento": "Equipamentos Industriais"}, {"_id": 109, "empresa": "MKS Equipamentos Hidráulicos", "codigo": "", "ultimo_contato": "", "email": "gerubens@marksell.com.br", "telefone": "", "whatsapp": "9 1797-8192", "nome_contato": "Giovanni", "status": "Prospecção", "estado": "SP", "municipio": "Itapevi", "segmento": "Equipamentos Industriais"}, {"_id": 110, "empresa": "Omega Cranes", "codigo": "", "ultimo_contato": "", "email": "joao.victor@omegacranes.com.br", "telefone": "", "whatsapp": "", "nome_contato": "João", "status": "Cotação", "estado": "SP", "municipio": "Mauá", "segmento": "Equipamentos Industriais"}, {"_id": 111, "empresa": "Orca Industrial", "codigo": "", "ultimo_contato": "30/03/2026", "email": "marlon@orcaindustrial.com.br", "telefone": "16 3943-9191", "whatsapp": "16 99312-6518", "nome_contato": "Marlon", "status": "Prospecção", "estado": "SP", "municipio": "Barrinha", "segmento": "Equipamentos Industriais"}, {"_id": 112, "empresa": "Promaquinas Industria e Comercio", "codigo": "", "ultimo_contato": "", "email": "compras@promaquinas.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "RJ", "municipio": "Rio de Janeiro", "segmento": "Equipamentos Industriais"}, {"_id": 113, "empresa": "Reichenbach Equipamentos e Industria", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "11 4181-5054", "whatsapp": "11 99905-1442", "nome_contato": "Rafel", "status": "Cotação", "estado": "SP", "municipio": "Carapicuíba", "segmento": "Equipamentos Industriais"}, {"_id": 114, "empresa": "Reichenbach Equipamentos e Industria", "codigo": "", "ultimo_contato": "12/01/2026", "email": "jucie@reichenbach.com.br", "telefone": "11 4181-5054", "whatsapp": "11 99905-1442", "nome_contato": "Juciê", "status": "Cotação", "estado": "SP", "municipio": "Cabreúva", "segmento": "Equipamentos Industriais"}, {"_id": 115, "empresa": "SAG Manutenção e Montagem Industrial", "codigo": "65570", "ultimo_contato": "12/01/2026", "email": "", "telefone": "", "whatsapp": "11 93003-2055", "nome_contato": "Katia", "status": "Cotação", "estado": "SP", "municipio": "Varzea Paulista", "segmento": "Equipamentos Industriais"}, {"_id": 116, "empresa": "Tertecman", "codigo": "32520", "ultimo_contato": "12/01/2026", "email": "compras@tertecman.com.br", "telefone": "55 (15) 34127880", "whatsapp": "5 99738-8020", "nome_contato": "Isabela", "status": "Fechando", "estado": "SP", "municipio": "Sorocaba", "segmento": "Equipamentos Industriais"}, {"_id": 117, "empresa": "TWT Equipamentos Industriais", "codigo": "", "ultimo_contato": "30/03/2026", "email": "moises@twttrocadoresdecalor.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Moises", "status": "Prospecção", "estado": "SP", "municipio": "Araçariguama", "segmento": "Equipamentos Industriais"}, {"_id": 118, "empresa": "Vemag Equipamentos Industriais", "codigo": "", "ultimo_contato": "30/03/2026", "email": "jean.milan@vemag.ind.br", "telefone": "", "whatsapp": "9 9243-1402", "nome_contato": "Jean", "status": "Prospecção", "estado": "SP", "municipio": "Sertãozinho", "segmento": "Equipamentos Industriais"}, {"_id": 119, "empresa": "Aste Assistencia Tecnica", "codigo": "66115", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "Andre", "status": "Fechando", "estado": "SP", "municipio": "Varzea Paulista", "segmento": "Equipamentos Industriais"}, {"_id": 120, "empresa": "Latasa Industria e Comercio", "codigo": "65811", "ultimo_contato": "", "email": "ricardo.antequera@gruporeciclabr.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Ricardo", "status": "Fechando", "estado": "SP", "municipio": "Pindamonhangaba", "segmento": "Equipamentos Industriais"}, {"_id": 121, "empresa": "Tetracom Equipamentos", "codigo": "63685", "ultimo_contato": "", "email": "suprimentos@tetracom.com.br", "telefone": "99703-4077", "whatsapp": "", "nome_contato": "Mariana", "status": "Cotação", "estado": "SP", "municipio": "Sertãozinho", "segmento": "Equipamentos Industriais"}, {"_id": 122, "empresa": "Poleoduto Industria e Comercio", "codigo": "51946", "ultimo_contato": "", "email": "compras@poleoduto.com.br", "telefone": "2413-1200 (235)", "whatsapp": "97539-1143", "nome_contato": "Daniele / Rosemeire", "status": "Cotação", "estado": "SP", "municipio": "Arujá", "segmento": "Equipamentos Industriais"}, {"_id": 123, "empresa": "Latasa Metais", "codigo": "65013", "ultimo_contato": "", "email": "ricardo.antequera@gruporeciclabr.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Ricardo", "status": "Fechando", "estado": "SP", "municipio": "Itaqua", "segmento": "Equipamentos Industriais"}, {"_id": 124, "empresa": "Metso Brasil Industria e Comercio", "codigo": "19890", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Sorocaba", "segmento": "Equipamentos Industriais"}, {"_id": 125, "empresa": "Beumer Latinoamericano Equipamentos", "codigo": "30960", "ultimo_contato": "30/03/2026", "email": "paulo.bonifacio@beumer.com", "telefone": "", "whatsapp": "", "nome_contato": "Paulo", "status": "Prospecção", "estado": "SP", "municipio": "Campinas", "segmento": "Equipamentos Industriais"}, {"_id": 126, "empresa": "CASP Indústria e Comercio Ltda", "codigo": "62746", "ultimo_contato": "30/03/2026", "email": "casp.suprimentos@casp.com.br", "telefone": "19 3808-8836", "whatsapp": "", "nome_contato": "Eduardo", "status": "Prospecção", "estado": "SP", "municipio": "Amparo", "segmento": "Equipamentos Industriais"}, {"_id": 127, "empresa": "Diamante Geração de Energia Ltda", "codigo": "61716", "ultimo_contato": "", "email": "paulo.melillo@diamanteenergia.com.br", "telefone": "3621-4092", "whatsapp": "", "nome_contato": "Paulo", "status": "Cotação", "estado": "SC", "municipio": "Capivari", "segmento": "Equipamentos Industriais"}, {"_id": 128, "empresa": "Heating Cooling", "codigo": "15900", "ultimo_contato": "", "email": "vanessa@heatingcooling.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Vanessa", "status": "Cotação", "estado": "SP", "municipio": "São Paulo", "segmento": "Equipamentos Industriais"}, {"_id": 129, "empresa": "Manzoni Idustrial", "codigo": "53656", "ultimo_contato": "", "email": "compras5@manzoni.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Vicotr", "status": "Cotação", "estado": "SP", "municipio": "Campinas", "segmento": "Equipamentos Industriais"}, {"_id": 130, "empresa": "Nova Everest Suprimentos", "codigo": "61387", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "95173-4455", "nome_contato": "Kevin", "status": "Fechando", "estado": "SP", "municipio": "São Paulo", "segmento": "Equipamentos Industriais"}, {"_id": 131, "empresa": "VMP Industria", "codigo": "64772", "ultimo_contato": "", "email": "ivancompras@vmpgrouop.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Ivan", "status": "Cotação", "estado": "SP", "municipio": "São Paulo", "segmento": "Equipamentos Industriais"}, {"_id": 132, "empresa": "Cadeiras Gennaro Ferrantes", "codigo": "66255", "ultimo_contato": "", "email": "compras@ferrante.com.br", "telefone": "11 2602-5800", "whatsapp": "11 99165-4945", "nome_contato": "Ricardo", "status": "Fechando", "estado": "SP", "municipio": "São paulo", "segmento": "Equipamentos Industriais"}, {"_id": 133, "empresa": "Equipsea Equipamentos e Serviços Industriais", "codigo": "61689", "ultimo_contato": "30/03/2026", "email": "ezequiel.costa@equipsea.com.br", "telefone": "19 3052-1705 (1139)", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Piracicaba", "segmento": "Equipamentos Industriais"}, {"_id": 134, "empresa": "ProGt Industrial Ltda", "codigo": "63976", "ultimo_contato": "30/03/2026", "email": "claudio.farias@progt.com.br", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Paulina", "segmento": "Equipamentos Industriais"}, {"_id": 135, "empresa": "Caldex Conexões e Equipamentos", "codigo": "60229", "ultimo_contato": "30/03/2026", "email": "compras@caldex.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Breno", "status": "Prospecção", "estado": "SP", "municipio": "Diadema", "segmento": "Equipamentos Industriais"}, {"_id": 136, "empresa": "CBC Industria Pesada S/A", "codigo": "50838", "ultimo_contato": "30/03/2026", "email": "joel.silva@cbcsa.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Joel", "status": "Prospecção", "estado": "SP", "municipio": "Jundiai", "segmento": "Equipamentos Industriais"}, {"_id": 137, "empresa": "Ares Oil & Gas", "codigo": "", "ultimo_contato": "", "email": "comercial@aresog.com", "telefone": "(22) 99726-3563", "whatsapp": "", "nome_contato": "Saulo", "status": "Prospecção", "estado": "RJ", "municipio": "Macaé", "segmento": "Equipamentos Industriais"}, {"_id": 138, "empresa": "Brascar Implementos Rodoviários", "codigo": "", "ultimo_contato": "30/03/2026", "email": "suprimentos@brascarir.com.br", "telefone": "", "whatsapp": "19 99602 0932", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Limeira", "segmento": "Implementos Rodoviarios"}, {"_id": 139, "empresa": "Germani Implementos", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "44 9143-2120", "nome_contato": "Douglas", "status": "Prospecção", "estado": "PR", "municipio": "Maringá", "segmento": "Implementos Rodoviarios"}, {"_id": 140, "empresa": "Pastre Implementos", "codigo": "59190", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "PR", "municipio": "Quatro Barras", "segmento": "Implementos Rodoviarios"}, {"_id": 141, "empresa": "Rodotrem Implementos Rodoviários", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Prospecção", "estado": "SP", "municipio": "Taubaté", "segmento": "Implementos Rodoviarios"}, {"_id": 142, "empresa": "Rosseti Equipamento", "codigo": "48377", "ultimo_contato": "30/03/2026", "email": "compras.sp@rossetti.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Sidney", "status": "Prospecção", "estado": "SP", "municipio": "Guarulhos", "segmento": "Implementos Rodoviarios"}, {"_id": 143, "empresa": "Versatil Implementos", "codigo": "", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "54 99237-3120", "nome_contato": "Raquel", "status": "Prospecção", "estado": "SP", "municipio": "Erechim", "segmento": "Implementos Rodoviarios"}, {"_id": 144, "empresa": "Metalurgica Edarp LT", "codigo": "", "ultimo_contato": "", "email": "andrea@edarp.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Andrea", "status": "Cotação", "estado": "SP", "municipio": "Guarulhos", "segmento": "Implementos Rodoviarios"}, {"_id": 145, "empresa": "Labor Equipamentos Rodoviarios", "codigo": "66077", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "98183-0163", "nome_contato": "Leonardo", "status": "Fechando", "estado": "SP", "municipio": "Guarulhos", "segmento": "Implementos Rodoviarios"}, {"_id": 146, "empresa": "Carroceria Linshalm Ltda", "codigo": "66844", "ultimo_contato": "", "email": "marcia.schubert@linshalm.com.br", "telefone": "", "whatsapp": "47 9658-3151", "nome_contato": "Marcia", "status": "Cotação", "estado": "SC", "municipio": "Timbó", "segmento": "Implementos Rodoviarios"}, {"_id": 147, "empresa": "Aços Pinhais LTDA", "codigo": "38400", "ultimo_contato": "", "email": "sarah.santos@acospinhais.com.br", "telefone": "", "whatsapp": "41 3058-7224", "nome_contato": "Sarah", "status": "Cotação", "estado": "PR", "municipio": "São José dos Pinhais", "segmento": "Revenda"}, {"_id": 148, "empresa": "Aços Especiais Galicia", "codigo": "50073", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "11 98650-9119", "nome_contato": "Paula", "status": "Fechando", "estado": "SP", "municipio": "São Paulo", "segmento": "Revenda"}, {"_id": 149, "empresa": "PSA Produtos Siderurgicos", "codigo": "59979", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Fechando", "estado": "SP", "municipio": "Guarulhos", "segmento": "Revenda"}, {"_id": 150, "empresa": "Globomar Comercial", "codigo": "58199", "ultimo_contato": "", "email": "compras2@globomar.com.br", "telefone": "", "whatsapp": "", "nome_contato": "Izaltino", "status": "Fechando", "estado": "RJ", "municipio": "Macae", "segmento": "Revenda"}, {"_id": 151, "empresa": "Aços America Latina", "codigo": "63291", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "Eder", "status": "Fechando", "estado": "SP", "municipio": "Guarulhos", "segmento": "Revenda"}, {"_id": 152, "empresa": "Miura Laser LTDA", "codigo": "66245", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Fechando", "estado": "SP", "municipio": "Moji Mirim", "segmento": "Revenda"}, {"_id": 153, "empresa": "César Aço Tubos e Conexões de Aço", "codigo": "66546", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "99199-6670", "nome_contato": "Fabio", "status": "Fechando", "estado": "SP", "municipio": "Pindamonhagaba", "segmento": "Revenda"}, {"_id": 154, "empresa": "Perfilaço Produtos Siderurgicos", "codigo": "66151", "ultimo_contato": "", "email": "rogerio@perfilaco.com.br", "telefone": "", "whatsapp": "71 99988-7346", "nome_contato": "Rogerio", "status": "Fechando", "estado": "BA", "municipio": "Lauro de Freitas", "segmento": "Revenda"}, {"_id": 155, "empresa": "Nova Everest Produtos Industraiais", "codigo": "61387", "ultimo_contato": "", "email": "", "telefone": "", "whatsapp": "", "nome_contato": "", "status": "Fechando", "estado": "SP", "municipio": "São Paulo", "segmento": "Revenda"}];
+const LS_KEY = 'crm_fercoi_db';
+const THEME_KEY = 'crm_fercoi_theme';
+
+let db = [];
+let currentView = 'lista';
+let sortCol = 'empresa', sortDir = 1;
+let editingIdx = null;
+
+// ── STORAGE ────────────────────────────────────────────────────────────────
+const SYNC_KEY = 'crm_fercoi_sync';
+const SYNC_TS_KEY = 'crm_fercoi_sync_ts';
+function getSyncCfg() { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || {}; } catch(e) { return {}; } }
+function setSyncCfg(cfg) { localStorage.setItem(SYNC_KEY, JSON.stringify(cfg)); }
+let lastRemoteUpdated = localStorage.getItem(SYNC_TS_KEY) || null;
+let pollTimer = null;
+function nowTime() { return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+
+function dbSave() { localStorage.setItem(LS_KEY, JSON.stringify(db)); gistPush(); }
+function dbLoad() { try { const r = localStorage.getItem(LS_KEY); if (r) return JSON.parse(r); } catch(e) {} return null; }
+
+function setSyncStatus(msg, ok=true) {
+  const el = document.getElementById('sync-status'); if (!el) return;
+  el.textContent = msg; el.style.color = ok ? '#4ade80' : '#f87171';
+  if (msg) setTimeout(() => { if (el.textContent===msg) el.textContent=''; }, 3500);
+}
+
+async function gistPush() {
+  const cfg = getSyncCfg(); if (!cfg.token || !cfg.gistId) return;
+  try {
+    const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `token ${cfg.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: { 'crm2026_data.json': { content: JSON.stringify(db) } } })
+    });
+    if (!res.ok) throw new Error(res.status);
+    const gist = await res.json();
+    lastRemoteUpdated = gist.updated_at;
+    localStorage.setItem(SYNC_TS_KEY, lastRemoteUpdated);
+    setSyncStatus('✓ Salvo na nuvem ' + nowTime());
+  } catch(e) { setSyncStatus('✗ Erro ao sincronizar', false); }
+}
+
+// Pulls remote data. Returns true if local db was updated with newer remote data.
+async function gistPull(force=false) {
+  const cfg = getSyncCfg(); if (!cfg.token || !cfg.gistId) return false;
+  try {
+    const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+      headers: { 'Authorization': `token ${cfg.token}` }
+    });
+    if (!res.ok) throw new Error(res.status);
+    const gist = await res.json();
+    if (!force && lastRemoteUpdated && gist.updated_at === lastRemoteUpdated) return false;
+    const file = gist.files['crm2026_data.json']; if (!file) return false;
+    const remote = JSON.parse(file.content);
+    db = remote;
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
+    lastRemoteUpdated = gist.updated_at;
+    localStorage.setItem(SYNC_TS_KEY, lastRemoteUpdated);
+    setSyncStatus('✓ Atualizado ' + nowTime());
+    return true;
+  } catch(e) { setSyncStatus('✗ Erro ao verificar', false); return false; }
+}
+
+// Periodically checks the Gist for changes made on other devices/profiles
+// and refreshes the screen automatically when something changes.
+function startAutoSync() {
+  if (pollTimer) clearInterval(pollTimer);
+  const cfg = getSyncCfg(); if (!cfg.token || !cfg.gistId) return;
+  pollTimer = setInterval(async () => {
+    if (document.hidden) return;
+    const changed = await gistPull();
+    if (changed) refresh();
+  }, 20000);
+}
+document.addEventListener('visibilitychange', async () => {
+  if (!document.hidden) {
+    const changed = await gistPull();
+    if (changed) refresh();
+  }
+});
+
+async function createGist(token) {
+  const res = await fetch('https://api.github.com/gists', {
+    method: 'POST',
+    headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ description: 'CRM 2026 Data', public: false,
+      files: { 'crm2026_data.json': { content: JSON.stringify(db.length ? db : SEED) } } })
+  });
+  if (!res.ok) throw new Error('Falha ao criar Gist: ' + res.status);
+  return (await res.json()).id;
+}
+
+function openSyncSettings() {
+  const cfg = getSyncCfg();
+  document.getElementById('sync-token').value = cfg.token || '';
+  document.getElementById('sync-gist-id').value = cfg.gistId || '';
+  document.getElementById('sync-overlay').classList.add('open');
+}
+function closeSyncSettings() { document.getElementById('sync-overlay').classList.remove('open'); }
+
+async function saveSyncSettings() {
+  const token = document.getElementById('sync-token').value.trim();
+  const gistId = document.getElementById('sync-gist-id').value.trim();
+  const btn = document.getElementById('sync-save-btn');
+  btn.disabled = true; btn.textContent = 'Salvando…';
+  try {
+    if (!token) { setSyncCfg({}); closeSyncSettings(); showToast('Sincronização desativada'); return; }
+    let id = gistId;
+    if (!id) { id = await createGist(token); showToast('Gist criado! ID: ' + id); }
+    setSyncCfg({ token, gistId: id });
+    closeSyncSettings(); showToast('Sincronização configurada!'); setSyncStatus('✓ Conectado');
+    lastRemoteUpdated = null;
+    const changed = await gistPull(true); if (changed) refresh();
+    startAutoSync();
+  } catch(e) { showToast('Erro: ' + e.message, true); }
+  finally { btn.disabled = false; btn.textContent = 'Salvar'; }
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = t === 'light' ? '🌙' : '☀️';
+  localStorage.setItem(THEME_KEY, t);
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  applyTheme(cur);
+}
+
+async function init() {
+  applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+  const saved = dbLoad();
+  db = saved && saved.length ? saved : SEED.map((r,i) => ({...r, _id: i+1}));
+  if (!saved) localStorage.setItem(LS_KEY, JSON.stringify(db));
+  populateSelects(); applyFilters();
+  const changed = await gistPull(true);
+  if (changed) refresh();
+  startAutoSync();
+}
+
+// ── SELECTS ────────────────────────────────────────────────────────────────
+function populateSelects() {
+  const segs = [...new Set(SEED.map(r => r.segmento))].sort();
+  const estados = [...new Set(SEED.map(r => r.estado).filter(Boolean))].sort();
+  segs.forEach(s => {
+    ['f-seg','k-seg','f-segmento'].forEach(id => {
+      const el = document.getElementById(id); if (!el) return;
+      const o = document.createElement('option'); o.value = o.textContent = s; el.appendChild(o);
+    });
+  });
+  estados.forEach(s => {
+    const el = document.getElementById('f-estado');
+    const o = document.createElement('option'); o.value = o.textContent = s; el.appendChild(o);
+  });
+}
+
+// ── BADGE ──────────────────────────────────────────────────────────────────
+function statusBadge(s) {
+  const cls = s==='Cotação'?'badge-c':s==='Fechando'?'badge-f':'badge-p';
+  const dot = s==='Cotação'?'dot-c':s==='Fechando'?'dot-f':'dot-p';
+  return `<span class="badge ${cls}"><span class="dot ${dot}"></span>${s}</span>`;
+}
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── FILTERS & TABLE ────────────────────────────────────────────────────────
+function applyFilters() {
+  const q = (document.getElementById('search').value||'').toLowerCase();
+  const seg = document.getElementById('f-seg').value;
+  const status = document.getElementById('f-status').value;
+  const estado = document.getElementById('f-estado').value;
+  const filtered = db.filter(r => {
+    if (seg && r.segmento!==seg) return false;
+    if (status && r.status!==status) return false;
+    if (estado && r.estado!==estado) return false;
+    if (q) {
+      const hay = [r.empresa,r.nome_contato,r.email,r.municipio,r.telefone,r.whatsapp,r.codigo].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  renderTable(filtered);
+}
+
+function sortBy(col) {
+  if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; }
+  document.querySelectorAll('.sort-icon').forEach(el => el.textContent='↕');
+  document.querySelectorAll('thead th').forEach(el => el.classList.remove('sorted'));
+  const si = document.getElementById('si-'+col);
+  if (si) { si.textContent=sortDir===1?'↑':'↓'; si.parentElement.classList.add('sorted'); }
+  applyFilters();
+}
+
+function renderTable(data) {
+  const sorted = [...data].sort((a,b) => (a[sortCol]||'').toString().localeCompare((b[sortCol]||'').toString(),'pt-BR')*sortDir);
+  document.getElementById('empty-msg').style.display = sorted.length?'none':'block';
+  document.getElementById('count-label').textContent = `${sorted.length} de ${db.length} registros`;
+  document.getElementById('tbody').innerHTML = sorted.map(r => {
+    const idx = db.indexOf(r);
+    const loc = [r.municipio,r.estado].filter(Boolean).join(' — ');
+    return `<tr ondblclick="openDetail(${idx})">
+      <td class="td-empresa">${esc(r.empresa)}<small>${r.codigo?'Cód: '+r.codigo:''}</small></td>
+      <td><span class="badge badge-seg">${esc(r.segmento)}</span></td>
+      <td>${statusBadge(r.status)}</td>
+      <td class="td-muted">${esc(r.nome_contato)||'<span style="color:var(--muted2)">—</span>'}</td>
+      <td><div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)">
+        ${r.email?`<span title="${esc(r.email)}">✉ ${esc(r.email.split('/')[0].trim().substring(0,34))}${r.email.length>34?'…':''}</span>`:''}
+        ${r.whatsapp?`<span>📱 ${esc(r.whatsapp)}</span>`:''}
+        ${r.telefone?`<span>📞 ${esc(r.telefone)}</span>`:''}
+        ${!r.email&&!r.whatsapp&&!r.telefone?'<span style="color:var(--muted2)">—</span>':''}
+      </div></td>
+      <td class="td-muted">${esc(loc)||'—'}</td>
+      <td class="td-muted">${esc(r.ultimo_contato)||'—'}</td>
+      <td><div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openForm(${idx})">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();askDelete(${idx})">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  renderTopCards();
+}
+
+function cardHTML(total,p,c,f) {
+  return `
+    <div class="card"><div class="card-label">Total</div><div class="card-value">${total}</div><div class="card-sub">registros</div></div>
+    <div class="card"><div class="card-label">Prospecção</div><div class="card-value" style="color:#f87171">${p}</div><div class="card-sub">${total?Math.round(p/total*100):0}% do total</div></div>
+    <div class="card"><div class="card-label">Cotação</div><div class="card-value" style="color:#fbbf24">${c}</div><div class="card-sub">${total?Math.round(c/total*100):0}% do total</div></div>
+    <div class="card"><div class="card-label">Fechando</div><div class="card-value" style="color:#4ade80">${f}</div><div class="card-sub">${total?Math.round(f/total*100):0}% do total</div></div>`;
+}
+function renderTopCards() {
+  const total=db.length, p=db.filter(r=>r.status==='Prospecção').length, c=db.filter(r=>r.status==='Cotação').length, f=db.filter(r=>r.status==='Fechando').length;
+  document.getElementById('cards-top').innerHTML = cardHTML(total,p,c,f);
+}
+
+// ── KANBAN ─────────────────────────────────────────────────────────────────
+function renderKanban() {
+  const seg = document.getElementById('k-seg').value;
+  const data = seg ? db.filter(r=>r.segmento===seg) : db;
+  const grp = {'Prospecção':[],'Cotação':[],'Fechando':[]};
+  data.forEach(r => { if(grp[r.status]) grp[r.status].push(r); });
+  const map = {'Prospecção':['k-p','kc-p'],'Cotação':['k-c','kc-c'],'Fechando':['k-f','kc-f']};
+  Object.entries(grp).forEach(([st,items]) => {
+    const [colId,cntId] = map[st];
+    document.getElementById(cntId).textContent = items.length;
+    document.getElementById(colId).innerHTML = items.length ? items.map(r => {
+      const idx = db.indexOf(r);
+      const loc = [r.municipio,r.estado].filter(Boolean).join(', ');
+      return `<div class="k-card" ondblclick="openDetail(${idx})">
+        <div class="k-card-name">${esc(r.empresa)}</div>
+        <div class="k-card-info">
+          ${r.nome_contato?'<span>👤 '+esc(r.nome_contato)+'</span>':''}
+          ${loc?'<span>📍 '+esc(loc)+'</span>':''}
+          ${r.ultimo_contato?'<span>📅 '+esc(r.ultimo_contato)+'</span>':''}
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
+          <span class="badge badge-seg">${esc(r.segmento)}</span>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;padding:3px 8px;font-size:11px" onclick="event.stopPropagation();openForm(${idx})">Editar</button>
+        </div>
+      </div>`;
+    }).join('') : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem registros</div>';
+  });
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const total=db.length, p=db.filter(r=>r.status==='Prospecção').length, c=db.filter(r=>r.status==='Cotação').length, f=db.filter(r=>r.status==='Fechando').length;
+  document.getElementById('cards-dash').innerHTML = cardHTML(total,p,c,f);
+  const bySeg={}; db.forEach(r=>{bySeg[r.segmento]=(bySeg[r.segmento]||0)+1;});
+  const segMax=Math.max(...Object.values(bySeg),1);
+  document.getElementById('ch-seg').innerHTML = Object.entries(bySeg).sort((a,b)=>b[1]-a[1]).map(([s,n])=>
+    `<div class="bar-row"><div class="bar-label" style="width:160px" title="${esc(s)}">${esc(s)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/segMax*100)}%"></div></div><div class="bar-num">${n}</div></div>`).join('');
+  document.getElementById('ch-status').innerHTML = [['Prospecção',p,'#f87171'],['Cotação',c,'#fbbf24'],['Fechando',f,'#4ade80']].map(([s,n,col])=>
+    `<div class="bar-row"><div class="bar-label" style="width:90px">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${total?Math.round(n/total*100):0}%;background:${col}"></div></div><div class="bar-num">${n}</div></div>`).join('');
+  const byEst={}; db.forEach(r=>{if(r.estado) byEst[r.estado]=(byEst[r.estado]||0)+1;});
+  const estMax=Math.max(...Object.values(byEst),1);
+  document.getElementById('ch-estado').innerHTML = Object.entries(byEst).sort((a,b)=>b[1]-a[1]).map(([s,n])=>
+    `<div class="bar-row"><div class="bar-label" style="width:30px">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/estMax*100)}%"></div></div><div class="bar-num">${n}</div></div>`).join('');
+  const recent=db.filter(r=>r.ultimo_contato).sort((a,b)=>b.ultimo_contato.localeCompare(a.ultimo_contato)).slice(0,8);
+  document.getElementById('ch-recent').innerHTML = recent.length ? recent.map(r=>
+    `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="font-weight:600">${esc(r.empresa)}</span><span style="color:var(--muted)">${esc(r.ultimo_contato)}</span></div>`).join('') : '<div style="color:var(--muted);font-size:12px">Sem dados</div>';
+}
+
+// ── DETAIL ─────────────────────────────────────────────────────────────────
+function openDetail(idx) {
+  const r = db[idx];
+  document.getElementById('d-badges').innerHTML = statusBadge(r.status)+' <span class="badge badge-seg">'+esc(r.segmento)+'</span>';
+  document.getElementById('d-empresa').textContent = r.empresa;
+  document.getElementById('d-sub').textContent = [r.municipio,r.estado].filter(Boolean).join(' — ')||'';
+  const wa = r.whatsapp ? r.whatsapp.replace(/\D/g,'') : '';
+  document.getElementById('d-body').innerHTML = `
+    <div class="field-grid">
+      <div class="field"><label>Código</label><div class="val-text ${r.codigo?'':'empty'}">${esc(r.codigo)||'—'}</div></div>
+      <div class="field"><label>Último Contato</label><div class="val-text ${r.ultimo_contato?'':'empty'}">${esc(r.ultimo_contato)||'—'}</div></div>
+      <div class="field full"><label>Contato</label><div class="val-text ${r.nome_contato?'':'empty'}">${esc(r.nome_contato)||'—'}</div></div>
+      <div class="field full"><label>Email</label><div class="val-text ${r.email?'':'empty'}">${r.email?r.email.split('/').map(e=>`<a href="mailto:${e.trim()}" style="color:var(--accent)">${esc(e.trim())}</a>`).join('<br>'):'—'}</div></div>
+      <div class="field"><label>Telefone</label><div class="val-text ${r.telefone?'':'empty'}">${esc(r.telefone)||'—'}</div></div>
+      <div class="field"><label>WhatsApp</label><div class="val-text ${r.whatsapp?'':'empty'}">${r.whatsapp?`<a href="https://wa.me/55${wa}" target="_blank" style="color:var(--accent)">📱 ${esc(r.whatsapp)}</a>`:'—'}</div></div>
+    </div>`;
+  document.getElementById('d-edit-btn').onclick = () => { closeDetail(); openForm(idx); };
+  document.getElementById('d-del-btn').onclick = () => { closeDetail(); askDelete(idx); };
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetail() { document.getElementById('detail-overlay').classList.remove('open'); }
+
+// ── FORM ───────────────────────────────────────────────────────────────────
+function openForm(idx) {
+  editingIdx = idx;
+  const isNew = idx===null;
+  document.getElementById('form-title').textContent = isNew?'Novo Lead':'Editar Lead';
+  const r = isNew?{}:db[idx];
+  document.getElementById('f-empresa').value = r.empresa||'';
+  document.getElementById('f-segmento').value = r.segmento||'';
+  document.getElementById('f-status-form').value = r.status||'Prospecção';
+  document.getElementById('f-codigo').value = r.codigo||'';
+  document.getElementById('f-nome').value = r.nome_contato||'';
+  document.getElementById('f-email').value = r.email||'';
+  document.getElementById('f-tel').value = r.telefone||'';
+  document.getElementById('f-wa').value = r.whatsapp||'';
+  document.getElementById('f-uf').value = r.estado||'';
+  document.getElementById('f-municipio').value = r.municipio||'';
+  document.getElementById('f-contato').value = r.ultimo_contato||'';
+  document.getElementById('form-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-empresa').focus(),50);
+}
+function closeForm() { document.getElementById('form-overlay').classList.remove('open'); }
+
+function saveForm() {
+  const empresa = document.getElementById('f-empresa').value.trim();
+  if (!empresa) { document.getElementById('f-empresa').focus(); return; }
+  const isNew = editingIdx===null;
+  const record = {
+    empresa, segmento:document.getElementById('f-segmento').value,
+    status:document.getElementById('f-status-form').value,
+    codigo:document.getElementById('f-codigo').value.trim(),
+    nome_contato:document.getElementById('f-nome').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    telefone:document.getElementById('f-tel').value.trim(),
+    whatsapp:document.getElementById('f-wa').value.trim(),
+    estado:document.getElementById('f-uf').value,
+    municipio:document.getElementById('f-municipio').value.trim(),
+    ultimo_contato:document.getElementById('f-contato').value.trim()
+  };
+  if (isNew) { record._id = db.length ? Math.max(...db.map(r=>r._id||0))+1 : 1; db.push(record); }
+  else { record._id = db[editingIdx]._id; db[editingIdx] = record; }
+  dbSave();
+  closeForm();
+  refresh();
+  showToast(isNew?'Lead adicionado':'Registro atualizado');
+}
+
+// ── DELETE ─────────────────────────────────────────────────────────────────
+function askDelete(idx) {
+  document.getElementById('confirm-msg').textContent = `Excluir "${db[idx].empresa}"? Esta ação não pode ser desfeita.`;
+  document.getElementById('confirm-ok').onclick = () => {
+    const name = db[idx].empresa;
+    db.splice(idx,1);
+    dbSave(); closeConfirm(); refresh();
+    showToast(`"${name}" excluído`);
+  };
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('open'); }
+
+// ── VIEWS ──────────────────────────────────────────────────────────────────
+function setView(v) {
+  currentView = v;
+  ['lista','kanban','dashboard'].forEach(x => document.getElementById('view-'+x).style.display = x===v?'block':'none');
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active',['lista','kanban','dashboard'][i]===v));
+  if (v==='kanban') renderKanban();
+  if (v==='dashboard') renderDashboard();
+}
+function refresh() {
+  applyFilters();
+  if (currentView==='kanban') renderKanban();
+  if (currentView==='dashboard') renderDashboard();
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function overlayClose(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+let toastTimer;
+function showToast(msg, isErr=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show'+(isErr?' err':'');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), isErr?4000:2500);
+}
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') ['form-overlay','detail-overlay','confirm-overlay'].forEach(id=>document.getElementById(id).classList.remove('open'));
+});
+
+init();
+</script>
+</body>
+</html>
