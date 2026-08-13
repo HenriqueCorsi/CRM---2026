@@ -185,6 +185,14 @@ tr:hover .actions { opacity:1; }
         <option>Prospecção</option><option>Cotação</option><option>Fechando</option>
       </select>
       <select class="filter" id="f-estado" onchange="applyFilters()"><option value="">Todos estados</option></select>
+      <select class="filter" id="f-contato" onchange="applyFilters()">
+        <option value="">Todos contatos</option>
+        <option value="email">Com email</option>
+        <option value="whatsapp">Com WhatsApp</option>
+        <option value="telefone">Com telefone</option>
+        <option value="qualquer">Com algum contato</option>
+        <option value="nenhum">Sem contato</option>
+      </select>
       <span class="count" id="count-label"></span>
       <button class="btn btn-primary" onclick="openForm(null)">+ Novo lead</button>
     </div>
@@ -195,7 +203,7 @@ tr:hover .actions { opacity:1; }
           <th onclick="sortBy('segmento')">Segmento<span class="sort-icon" id="si-segmento">↕</span></th>
           <th onclick="sortBy('status')">Status<span class="sort-icon" id="si-status">↕</span></th>
           <th onclick="sortBy('nome_contato')">Contato<span class="sort-icon" id="si-nome_contato">↕</span></th>
-          <th>Email / WhatsApp / Telefone</th>
+          <th onclick="sortBy('contato_info')">Email / WhatsApp / Telefone<span class="sort-icon" id="si-contato_info">↕</span></th>
           <th onclick="sortBy('estado')">Local<span class="sort-icon" id="si-estado">↕</span></th>
           <th onclick="sortBy('ultimo_contato')">Últ. Contato<span class="sort-icon" id="si-ultimo_contato">↕</span></th>
           <th style="width:90px"></th>
@@ -387,12 +395,15 @@ async function gistPush() {
       headers: { 'Authorization': `token ${cfg.token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ files: { 'crm2026_data.json': { content: JSON.stringify(db) } } })
     });
-    if (!res.ok) throw new Error(res.status);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(res.status + (body.message ? ' - ' + body.message : ''));
+    }
     const gist = await res.json();
     lastRemoteUpdated = gist.updated_at;
     localStorage.setItem(SYNC_TS_KEY, lastRemoteUpdated);
     setSyncStatus('✓ Salvo na nuvem ' + nowTime());
-  } catch(e) { setSyncStatus('✗ Erro ao sincronizar', false); }
+  } catch(e) { setSyncStatus('✗ Erro: ' + e.message, false); }
 }
 
 // Pulls remote data. Returns true if local db was updated with newer remote data.
@@ -402,7 +413,10 @@ async function gistPull(force=false) {
     const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
       headers: { 'Authorization': `token ${cfg.token}` }
     });
-    if (!res.ok) throw new Error(res.status);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(res.status + (body.message ? ' - ' + body.message : ''));
+    }
     const gist = await res.json();
     if (!force && lastRemoteUpdated && gist.updated_at === lastRemoteUpdated) return false;
     const file = gist.files['crm2026_data.json']; if (!file) return false;
@@ -413,7 +427,7 @@ async function gistPull(force=false) {
     localStorage.setItem(SYNC_TS_KEY, lastRemoteUpdated);
     setSyncStatus('✓ Atualizado ' + nowTime());
     return true;
-  } catch(e) { setSyncStatus('✗ Erro ao verificar', false); return false; }
+  } catch(e) { setSyncStatus('✗ Erro: ' + e.message, false); return false; }
 }
 
 // Periodically checks the Gist for changes made on other devices/profiles
@@ -441,7 +455,10 @@ async function createGist(token) {
     body: JSON.stringify({ description: 'CRM 2026 Data', public: false,
       files: { 'crm2026_data.json': { content: JSON.stringify(db.length ? db : SEED) } } })
   });
-  if (!res.ok) throw new Error('Falha ao criar Gist: ' + res.status);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error('Falha ao criar Gist: ' + res.status + (body.message ? ' - ' + body.message : ''));
+  }
   return (await res.json()).id;
 }
 
@@ -527,10 +544,19 @@ function applyFilters() {
   const seg = document.getElementById('f-seg').value;
   const status = document.getElementById('f-status').value;
   const estado = document.getElementById('f-estado').value;
+  const contato = document.getElementById('f-contato').value;
   const filtered = db.filter(r => {
     if (seg && r.segmento!==seg) return false;
     if (status && r.status!==status) return false;
     if (estado && r.estado!==estado) return false;
+    if (contato) {
+      const temAlgum = !!(r.email || r.whatsapp || r.telefone);
+      if (contato==='email' && !r.email) return false;
+      if (contato==='whatsapp' && !r.whatsapp) return false;
+      if (contato==='telefone' && !r.telefone) return false;
+      if (contato==='qualquer' && !temAlgum) return false;
+      if (contato==='nenhum' && temAlgum) return false;
+    }
     if (q) {
       const hay = [r.empresa,r.nome_contato,r.email,r.municipio,r.telefone,r.whatsapp,r.codigo].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
@@ -550,7 +576,8 @@ function sortBy(col) {
 }
 
 function renderTable(data) {
-  const sorted = [...data].sort((a,b) => (a[sortCol]||'').toString().localeCompare((b[sortCol]||'').toString(),'pt-BR')*sortDir);
+  const val = r => sortCol==='contato_info' ? [r.email,r.whatsapp,r.telefone].filter(Boolean).join(' ') : (r[sortCol]||'');
+  const sorted = [...data].sort((a,b) => val(a).toString().localeCompare(val(b).toString(),'pt-BR')*sortDir);
   document.getElementById('empty-msg').style.display = sorted.length?'none':'block';
   document.getElementById('count-label').textContent = `${sorted.length} de ${db.length} registros`;
   document.getElementById('tbody').innerHTML = sorted.map(r => {
