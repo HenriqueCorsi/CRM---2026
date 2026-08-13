@@ -577,7 +577,12 @@ function sortBy(col) {
 
 function renderTable(data) {
   const val = r => sortCol==='contato_info' ? [r.email,r.whatsapp,r.telefone].filter(Boolean).join(' ') : (r[sortCol]||'');
-  const sorted = [...data].sort((a,b) => val(a).toString().localeCompare(val(b).toString(),'pt-BR')*sortDir);
+  const sorted = [...data].sort((a,b) => {
+    const va = val(a).toString(), vb = val(b).toString();
+    if (!va && vb) return 1;      // vazios sempre no final
+    if (va && !vb) return -1;
+    return va.localeCompare(vb,'pt-BR')*sortDir;
+  });
   document.getElementById('empty-msg').style.display = sorted.length?'none':'block';
   document.getElementById('count-label').textContent = `${sorted.length} de ${db.length} registros`;
   document.getElementById('tbody').innerHTML = sorted.map(r => {
